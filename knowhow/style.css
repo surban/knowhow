@@ -1,0 +1,96 @@
+﻿
+
+body {
+    /*font-family:          Georgia, 'Bitstream Charter', serif; */
+    font-family: sans-serif;
+    font-size: 0.9em;
+    line-height: 1.6em;
+}
+
+#content {
+    display: block;
+    width: 55em;
+    text-align: justify;
+}
+
+h1, h2 {
+    line-height: 1.2em;
+    border-bottom-color: #AAA;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    margin-bottom: 0.8ex;
+}
+
+h1 {
+    font-size: 1.6em;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.4em;
+    font-weight: normal;
+}
+
+h3, h4 {
+    font-weight: bold;
+    margin-top: 2ex;
+    margin-bottom: 0.8ex;
+}
+
+h3 {
+    font-size: 1.2em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h1 + p, h2 + p, h3 + p, h4 + p {
+    margin-top: 0;
+}
+
+a.reference:link {
+    text-decoration: none;
+}
+
+a.reference:visited {
+    text-decoration: none;
+}
+
+a.reference:hover {
+    text-decoration: none;
+}
+
+a.reference:active {
+    text-decoration: none;
+}
+
+
+
+/* **************************************************************************** */
+/* error overlay                                                                */
+/* **************************************************************************** */
+
+#overlay {
+    display: none;
+    z-index: 10000;
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    text-align: center;
+    vertical-align: middle;
+    opacity: 0.95;
+    background-color: #311;
+    width: 600px;
+    margin-left: -300px;
+    min-height: 200px;
+    border: 1px solid #666;
+    -webkit-box-shadow: 0 0 90px #000;
+}
+
+#overlay_content {
+    position: relative;
+    top: 30px;
+    color: #fff;
+    font-size: 150%;
+}

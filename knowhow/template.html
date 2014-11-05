@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="/icon.png" />
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+
+    <script type="text/javascript" src="/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            TeX: { equationNumbers: { autoNumber: "AMS" } },
+            "HTML-CSS": { showMathMenu: false }
+        });
+    </script>
+    <script type="text/javascript" src="/script.js"></script>
+
+    <title>%(title)</title>
+</head>
+
+<body>
+    <div id="content" style="display:none">
+        <div id="mmd_modified" style="display:none">%(src_mtime)</div>
+        <div id="src_name" style="display:none">%(src_name)</div>
+        <div id="overlay" class="overlay">
+            <div id="overlay_content" class="overlay_content">
+                %(error)
+            </div>
+        </div>
+        <span style="display:none" class="math">
+            \[ %(preamble) \]
+        </span>
+
+        %(body)
+    </div>
+
+    <iframe style="display:none" id="preloader"></iframe>
+</body>
+</html>
