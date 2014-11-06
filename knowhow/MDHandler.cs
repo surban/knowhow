@@ -3,9 +3,9 @@ using System.Web;
 
 namespace knowhow
 {
-    public class MMDHandler : IHttpHandler
+    public class MDHandler : IHttpHandler
     {
-        public MMDHandler()
+        public MDHandler()
         {
 
         }
@@ -14,8 +14,6 @@ namespace knowhow
 
         public bool IsReusable
         {
-            // Return false in case your Managed Handler cannot be reused for another request.
-            // Usually this would be false in case you have some state information preserved per request.
             get { return true; }
         }
 

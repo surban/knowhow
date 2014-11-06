@@ -1,11 +1,12 @@
 ﻿module core
 
 open System.IO
+open System.Web
 open FSharp.Configuration
 open FSharp.Markdown
 
 // Settings
-let settings = System.Web.Configuration.WebConfigurationManager.AppSettings
+let settings = Configuration.WebConfigurationManager.AppSettings
 let userPath user = settings.["UserPath"].Replace("%USER%", user)
 let sharedPath = settings.["SharedPath"]
 
@@ -22,14 +23,18 @@ let SplitPath (requestPath: string) =
 
 let GetSourcePath (requestPath: string) =
     let prefix, rest = SplitPath requestPath
-    Array.concat [[|prefix|]; rest] |> Path.Combine 
+    let path = Array.concat [[|prefix|]; rest] |> Path.Combine 
+    if not ((Seq.last rest).Contains(".")) then
+        path + ".md"
+    else
+        path
 
 let GetPreamblePath requestPath =
     let prefix, _ = SplitPath requestPath
     Path.Combine(prefix, "preamble.tex")
 
 let FillTemplate (fields: Map<string, string>) =
-    let tmpl = ReadFile (System.Web.HttpContext.Current.Server.MapPath("~/template.html"))
+    let tmpl = ReadFile (HttpContext.Current.Server.MapPath("~/template.html"))
     Map.fold (fun (text: string) variable value -> text.Replace("%(" + variable + ")", value)) 
         tmpl fields    
 
@@ -51,7 +56,7 @@ let PreprocessMarkdown (md: string) =
 let ExtractTitle (md: MarkdownDocument) =
     let rec extract = function
         | Heading(_, [Literal text])::rest -> Some text
-        | _ ::rest -> extract rest
+        | _::rest -> extract rest
         | [] -> None
     extract md.Paragraphs
 
