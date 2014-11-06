@@ -21,7 +21,7 @@ namespace knowhow
         {
             HttpRequest Request = context.Request;
             HttpResponse Response = context.Response;
-            core.HandleRequest(Request, Response);
+            Handler.HandleRequest(Request, Response);
         }
 
         #endregion

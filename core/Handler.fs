@@ -1,9 +1,9 @@
-﻿module core
+﻿module Handler
 
 open System.IO
 open System.Web
-open FSharp.Configuration
 open FSharp.Markdown
+open Newtonsoft.Json
 
 // Settings
 let settings = Configuration.WebConfigurationManager.AppSettings
@@ -50,7 +50,6 @@ let PreprocessMarkdown (md: string) =
             yield! AddMathParagraph line rest
         | [] -> ()
         }
-    System.Diagnostics.Debug.WriteLine("Hi debug")
     lines |> Array.toList |> AddMathParagraph "" |> String.concat "\n"
 
 let ExtractTitle (md: MarkdownDocument) =
@@ -59,6 +58,8 @@ let ExtractTitle (md: MarkdownDocument) =
         | _::rest -> extract rest
         | [] -> None
     extract md.Paragraphs
+
+type Metadata = {RequestPath: string;  SourceMTime: int64;}
 
 let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =
     let src = GetSourcePath request.FilePath
@@ -75,6 +76,9 @@ let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpRe
     
     ["title", title;
      "preamble", preamble;
+     "metadata", {RequestPath=request.FilePath; 
+                  SourceMTime=File.GetLastWriteTimeUtc(src).Ticks;} 
+                    |> JsonConvert.SerializeObject;
      "body", body ] 
         |> Map.ofList |> FillTemplate |> response.Write
     
