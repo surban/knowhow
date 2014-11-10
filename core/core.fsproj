@@ -22,6 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\core.XML</DocumentationFile>
+    <OtherFlags>
+    </OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -51,8 +53,10 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <Content Include="app.config" />
+    <Compile Include="MDPreprocessor.fs" />
     <Compile Include="Handler.fs" />
     <Compile Include="Watcher.fs" />
+    <None Include="TestMDPreprocessor.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="CSharpFormat">
