@@ -39,22 +39,6 @@ let FillTemplate (fields: Map<string, string>) =
     Map.fold (fun (text: string) variable value -> text.Replace("%(" + variable + ")", value)) 
         tmpl fields    
  
-let PreprocessMarkdown (md: string) =
-    md |> MDPreprocessor.ParseMDText |> MDPreprocessor.OutputMDText
-//    let lines = md.Split([|'\n'|])
-//    // add empty line before "$$$" math paragraph to satisfy markdown parser
-//    let rec AddMathParagraph (prev: string) (lines: string list) = seq { 
-//        match lines with
-//        | line::rest -> 
-//            if line.Trim().StartsWith("$$$") && prev.Trim().Length <> 0 then
-//                yield ""
-//            yield line
-//            yield! AddMathParagraph line rest
-//        | [] -> ()
-//        }
-//    //let rec 
-//    lines |> Array.toList |> AddMathParagraph "" |> String.concat "\n"
-
 let ExtractTitle (md: MarkdownDocument) =
     let rec extract = function
         | Heading(_, [Literal text])::rest -> Some text
@@ -69,13 +53,14 @@ let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpRe
     let preamble_src = GetPreamblePath request.FilePath
     let preamble =
         if File.Exists(preamble_src) then ReadFile preamble_src else ""
-    let md = ReadFile src |> PreprocessMarkdown |> Markdown.Parse
+    let md = ReadFile src |> MDPreprocessor.ParseMDText |> MDPreprocessor.OutputMDText 
+                          |> Markdown.Parse
     let title = 
         match ExtractTitle md with
         | Some t -> t
         | None -> request.FilePath
-
-    let body = Markdown.WriteHtml md
+    let mdTagged, references = MDProcessor.ExtractAndTagReferences md
+    let body = Markdown.WriteHtml mdTagged |> MDProcessor.PatchCitations references 
     
     ["title", title;
      "preamble", preamble;

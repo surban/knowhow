@@ -54,9 +54,9 @@
     <Content Include="packages.config" />
     <Content Include="app.config" />
     <Compile Include="MDPreprocessor.fs" />
+    <Compile Include="MDProcessor.fs" />
     <Compile Include="Handler.fs" />
     <Compile Include="Watcher.fs" />
-    <None Include="TestMDPreprocessor.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="CSharpFormat">

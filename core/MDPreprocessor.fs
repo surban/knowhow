@@ -134,7 +134,7 @@ and OutputMathElements (mes: MathElement list) =
 let OutputTextElement (te: TextElement) =
     match te with
     | Text txt -> txt
-    | Citation target -> sprintf @"\cite{%s}" target
+    | Citation target -> sprintf @"\cite{%s}" (target.ToLower())
     | EQRef target -> sprintf @"$\eqref{%s}$" target
     | InlineMath me -> sprintf @"$%s$" (OutputMathElements me)
     | MathBlock me -> sprintf "\n\n$$$\n%s\n\n" (OutputMathElement me)
