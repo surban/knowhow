@@ -34,7 +34,6 @@ let ExtractAndTagReferences (md: MarkdownDocument) =
 
     MarkdownDocument(List.rev tagged, md.DefinedLinks), references
 
-
 let PatchCitations references txt = 
     Map.fold (fun (txt: string) (target: string) no -> 
                 let short = target.Split([|'.'|]).[0].ToLower()
@@ -42,5 +41,10 @@ let PatchCitations references txt =
                             sprintf "<a href=\"%s\">[%d]</a>" target no))
         txt references
 
-
+let ExtractTitle (md: MarkdownDocument) =
+    let rec extract = function
+        | Heading(_, [Literal text])::rest -> Some text
+        | _::rest -> extract rest
+        | [] -> None
+    extract md.Paragraphs
 

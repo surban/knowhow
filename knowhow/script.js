@@ -44,6 +44,7 @@ $(function () {
             if (mtime != metadata.SourceMTime) {
                 console.log("source updated (original=" + metadata.SourceMTime + ", new=" + mtime + ")");
                 document.getElementById('preloader').src = document.location.href + "?preload";
+                metadata.SourceMTime = mtime;
             }
         }
         $.connection.hub.start().done(function () {

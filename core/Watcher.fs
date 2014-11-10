@@ -68,6 +68,9 @@ let RegisterClient connectionId requestPath =
     ClientAssociations.AddWatch connectionId src
     Watch.AddDirectory src_dir
 
+    // send initial notification for cached pages
+    Notify.Invoke(connectionId, src, File.GetLastWriteTimeUtc(src).Ticks)
+
 
 let DeregisterClient connectionId =
     ClientAssociations.RemoveClient connectionId

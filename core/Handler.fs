@@ -4,7 +4,6 @@ open System.IO
 open System.Web
 open FSharp.Markdown
 open Newtonsoft.Json
-open System.Text.RegularExpressions
 
 // Settings
 let settings = Configuration.WebConfigurationManager.AppSettings
@@ -25,7 +24,7 @@ let SplitPath (requestPath: string) =
 let GetSourcePath (requestPath: string) =
     let prefix, rest = SplitPath requestPath
     let path = Array.concat [[|prefix|]; rest] |> Path.Combine 
-    if not ((Seq.last rest).Contains(".")) then
+    if not (File.Exists(path) || Directory.Exists(path)) then
         path + ".md"
     else
         path
@@ -39,36 +38,48 @@ let FillTemplate (fields: Map<string, string>) =
     Map.fold (fun (text: string) variable value -> text.Replace("%(" + variable + ")", value)) 
         tmpl fields    
  
-let ExtractTitle (md: MarkdownDocument) =
-    let rec extract = function
-        | Heading(_, [Literal text])::rest -> Some text
-        | _::rest -> extract rest
-        | [] -> None
-    extract md.Paragraphs
-
 type Metadata = {RequestPath: string;  SourceMTime: int64;}
 
-let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =
-    let src = GetSourcePath request.FilePath
-    let preamble_src = GetPreamblePath request.FilePath
+let HandleMDRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
+    let src = GetSourcePath request.Path
+    let preamble_src = GetPreamblePath request.Path
     let preamble =
         if File.Exists(preamble_src) then ReadFile preamble_src else ""
     let md = ReadFile src |> MDPreprocessor.ParseMDText |> MDPreprocessor.OutputMDText 
                           |> Markdown.Parse
     let title = 
-        match ExtractTitle md with
+        match MDProcessor.ExtractTitle md with
         | Some t -> t
-        | None -> request.FilePath
+        | None -> request.Path
     let mdTagged, references = MDProcessor.ExtractAndTagReferences md
     let body = Markdown.WriteHtml mdTagged |> MDProcessor.PatchCitations references 
     
     ["title", title;
      "preamble", preamble;
-     "metadata", {RequestPath=request.FilePath; 
+     "metadata", {RequestPath=request.Path; 
                   SourceMTime=File.GetLastWriteTimeUtc(src).Ticks;} 
                     |> JsonConvert.SerializeObject;
      "body", body ] 
         |> Map.ofList |> FillTemplate |> response.Write
     
+let HandleFileRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
+    let src = GetSourcePath request.Path
+    response.ContentType <- System.Web.MimeMapping.GetMimeMapping(src)
+    response.TransmitFile src
+
+let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
+    let src = GetSourcePath request.Path
+    if Directory.Exists(src) then
+        response.Redirect(sprintf "%s/Contents" (request.Path))
+    elif File.Exists(src) then
+        match Path.GetExtension(src) with
+        | ".md" -> HandleMDRequest request response
+        | _ -> HandleFileRequest request response
+    else
+        response.StatusCode <- 404
+        //response.Write(sprintf "Resource not found: %s" src)
+        response.Write(sprintf "Resource not found: %s" request.Path)
+
+
 
 
