@@ -87,6 +87,9 @@
     <Content Include="LICENSE.txt" />
     <Content Include="packages.config" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
+    <Content Include="fonts\OpenSans-Bold.ttf" />
+    <Content Include="fonts\OpenSans-BoldItalic.ttf" />
+    <Content Include="fonts\OpenSans-Regular.ttf" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

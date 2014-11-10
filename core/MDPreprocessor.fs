@@ -136,7 +136,7 @@ let OutputTextElement (te: TextElement) =
     | Text txt -> txt
     | Citation target -> sprintf @"\cite{%s}" (target.ToLower())
     | EQRef target -> sprintf @"$\eqref{%s}$" target
-    | InlineMath me -> sprintf @"$%s$" (OutputMathElements me)
+    | InlineMath me -> sprintf @"$\smash{%s}$" (OutputMathElements me)
     | MathBlock me -> sprintf "\n\n$$$\n%s\n\n" (OutputMathElement me)
     | MathParagraph txt -> sprintf "\n\n$$$\n%s\n\n" txt
         
