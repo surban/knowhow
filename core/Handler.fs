@@ -40,6 +40,11 @@ let FillTemplate (fields: Map<string, string>) =
  
 type Metadata = {RequestPath: string;  SourceMTime: int64;}
 
+let SetCache (response: System.Web.HttpResponse) =
+    response.Cache.SetLastModifiedFromFileDependencies()
+    response.Cache.SetCacheability(HttpCacheability.Public)
+    response.Cache.SetValidUntilExpires(true)
+
 let HandleMDRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
     let src = GetSourcePath request.Path
     let preamble_src = GetPreamblePath request.Path
@@ -53,6 +58,9 @@ let HandleMDRequest (request: System.Web.HttpRequest) (response: System.Web.Http
         | None -> request.Path
     let mdTagged, references = MDProcessor.ExtractAndTagReferences md
     let body = Markdown.WriteHtml mdTagged |> MDProcessor.PatchCitations references 
+
+    response.AddFileDependency(src)
+    SetCache response
     
     ["title", title;
      "preamble", preamble;
@@ -65,6 +73,8 @@ let HandleMDRequest (request: System.Web.HttpRequest) (response: System.Web.Http
 let HandleFileRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
     let src = GetSourcePath request.Path
     response.ContentType <- System.Web.MimeMapping.GetMimeMapping(src)
+    response.AddFileDependency(src)
+    SetCache response
     response.TransmitFile src
 
 let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
