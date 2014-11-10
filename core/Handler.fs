@@ -24,14 +24,14 @@ let SplitPath (requestPath: string) =
 let GetSourcePath (requestPath: string) =
     let prefix, rest = SplitPath requestPath
     let path = Array.concat [[|prefix|]; rest] |> Path.Combine 
-    if not (File.Exists(path) || Directory.Exists(path)) then
+    if File.Exists(path + ".md") then
         path + ".md"
     else
         path
 
 let GetPreamblePath requestPath =
     let prefix, _ = SplitPath requestPath
-    Path.Combine(prefix, "preamble.tex")
+    Path.Combine(prefix, "Config", "preamble.tex")
 
 let FillTemplate (fields: Map<string, string>) =
     let tmpl = ReadFile (HttpContext.Current.Server.MapPath("~/template.html"))

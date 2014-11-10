@@ -64,7 +64,7 @@ module Watch =
 let RegisterClient connectionId requestPath =
     let src = Handler.GetSourcePath requestPath
     let src_dir = Path.GetDirectoryName src
-
+     
     ClientAssociations.AddWatch connectionId src
     Watch.AddDirectory src_dir
 

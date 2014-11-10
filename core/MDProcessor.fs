@@ -36,8 +36,11 @@ let ExtractAndTagReferences (md: MarkdownDocument) =
 
 let PatchCitations references txt = 
     Map.fold (fun (txt: string) (target: string) no -> 
-                let short = target.Split([|'.'|]).[0].ToLower()
-                txt.Replace(sprintf @"\cite{%s}" short, 
+                let shortName = 
+                    match target with
+                    | MDPreprocessor.ParseRegex @"/?([\w_-]+)\.\w+" [filename] -> filename.ToLower()
+                    | _ -> target
+                txt.Replace(sprintf @"\cite{%s}" shortName, 
                             sprintf "<a href=\"%s\">[%d]</a>" target no))
         txt references
 
