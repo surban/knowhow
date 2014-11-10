@@ -12,17 +12,6 @@ var preloading = (document.location.href.indexOf("?preload") != -1);
 function preloaderReady() {
     // called by page loaded in iframe when math rendering is completed
     updated_doc = document.getElementById('preloader').contentWindow.document;
-
-    if (updated_doc.getElementById('error') == null) {
-        document.getElementById('overlay').style.display = "none";
-        document.getElementById('content').innerHTML =
-            updated_doc.getElementById('content').innerHTML;
-    }
-    else {
-        document.getElementById('overlay_content').innerHTML =
-            updated_doc.getElementById('error').innerHTML;
-        document.getElementById('overlay').style.display = "inline";
-    }
 }
 
 
