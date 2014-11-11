@@ -7,7 +7,7 @@
 
 // parameters
 var metadata = JSON.parse($("#metadata").html());
-var preloading = (document.location.href.indexOf("?preload") != -1);
+var preloading = (document.location.href.indexOf("/preload/") != -1);
 
 
 function detectIE() {
@@ -51,17 +51,30 @@ $(function () {
 
         // register with server for change notifications
         var rpc = $.connection.signalHub;
-        rpc.client.fileChanged = function (path, mtime) {
-            if (mtime != metadata.SourceMTime) {
-                console.log("source updated (original=" + metadata.SourceMTime + ", new=" + mtime + ")");
-                document.getElementById('preloader').src = document.location.href + "?preload";
-                metadata.SourceMTime = mtime;
+        if (rpc) {
+            rpc.client.fileChanged = function (path, mtime) {
+                if (mtime != metadata.SourceMTime) {
+                    console.log("source updated (original=" + metadata.SourceMTime + ", new=" + mtime + ")");
+                    document.getElementById('preloader').src = "/preload" + metadata.RequestPath + "?tag=" + Math.random();
+                    metadata.SourceMTime = mtime;
+                }
             }
+            $.connection.hub.start().done(function () {
+                console.log("registering with server to watch " + metadata.RequestPath);
+                rpc.server.watchFile(metadata.RequestPath);
+            });
+        } else {
+            console.log("server rpc not available");
         }
-        $.connection.hub.start().done(function () {
-            console.log("registering with server to watch " + metadata.RequestPath);
-            rpc.server.watchFile(metadata.RequestPath);
-        });
+
+        // handle cache update
+        if (window.applicationCache) {
+            window.applicationCache.addEventListener('updateready', function (e) {
+                if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
+                    window.location.reload();
+                } 
+            }, false);
+        }
     }
     else {
         // we are being loaded in an iframe for prerendering
