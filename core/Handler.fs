@@ -103,6 +103,9 @@ let HandleFileRequest (request: System.Web.HttpRequest) (response: System.Web.Ht
     SetCache response
     response.TransmitFile src
 
+let ToURLPath (path: string) =
+    path.Replace(@"\", "/") 
+
 let rec AllFiles dir =
     let files = Directory.GetFileSystemEntries(dir)
     seq {
@@ -113,6 +116,17 @@ let rec AllFiles dir =
                 for subfile in AllFiles entry do
                     yield Path.Combine(Path.GetFileName(entry), subfile)
     }
+
+let AllFilesInVirtualPath (request: System.Web.HttpRequest) virtualPath =
+    let physicalPath = request.MapPath(virtualPath)
+    seq {
+        if File.Exists(physicalPath) then 
+            yield virtualPath
+        elif Directory.Exists(physicalPath) then
+            for physicalFile in AllFiles physicalPath do
+                yield virtualPath + "/" + ToURLPath physicalFile
+    }
+
 
 let offlineSupportFiles = ["/script.js"; "/style.css"; "/icon16.png"; "/icon32.png"; "/fonts/OpenSans-Regular.ttf";
                            "/Scripts/jquery-1.10.2.js"; "/Scripts/jquery.signalR-2.0.2.js";
@@ -133,8 +147,6 @@ let MathJaxFiles = [@"MathJax\MathJax.js";
                     @"MathJax\jax\output\HTML-CSS\fonts\Latin-Modern";
                     @"MathJax\jax\output\HTML-CSS\fonts\TeX"]
 
-let ToURLPath (path: string) =
-    path.Replace(@"\", "/") 
 
 let SubpathFiles (request: System.Web.HttpRequest) file = 
     let fullpath = Path.Combine(request.PhysicalApplicationPath, file)
@@ -164,6 +176,7 @@ let HandleOfflineManifestRequest (request: System.Web.HttpRequest) (response: Sy
                               response.Write(sprintf "# %s\n" (mtime.ToString())); 
                               response.Write(ToURLPath f + "\n") )
     response.Write("\n")
+    ["/Scripts"; "/Web"] |> Seq.collect (AllFilesInVirtualPath request) |> String.concat "\n" |> response.Write
     offlineSupportFiles |> String.concat "\n" |> response.Write
     response.Write("\n")
     for d in MathJaxFiles do
