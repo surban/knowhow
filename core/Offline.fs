@@ -15,6 +15,7 @@ let OfflineManifest requestPath =
     let absoluteVirtualContentRoot = VirtualPathUtility.ToAbsolute("~/" + virtualContentRoot)
 
     let contentFiles = AllFilesInPath contentDir
+    let contentPhysicalFiles = contentFiles |> Seq.map (fun f -> Path.Combine(contentDir, f))
     let supportVirtualFiles = ["~/Scripts"; "~/Web"] |> Seq.collect AllFilesInVirtualPath 
     let supportFiles = supportVirtualFiles |> Seq.map VirtualToPhysical
     let mathJaxVirtualFiles = AllFilesInVirtualPath "~/MathJax"
@@ -27,7 +28,7 @@ let OfflineManifest requestPath =
     write ""
 
     let lastMTime = 
-        Seq.concat [contentFiles; supportFiles; mathJaxFiles] 
+        Seq.concat [contentPhysicalFiles; supportFiles; mathJaxFiles] 
         |> Seq.fold (fun s f -> max s (File.GetLastWriteTimeUtc(f).Ticks)) 0L
     write (sprintf "# last modification: %d" lastMTime)
     write ""
@@ -57,7 +58,7 @@ let OfflineManifest requestPath =
     write "*"
     write ""
 
-    write "FALLBACK:"
-    write (sprintf "%s/ %s/Contents" absoluteVirtualContentRoot absoluteVirtualContentRoot)
+    //write "FALLBACK:"
+    //write (sprintf "%s/ %s/Contents" absoluteVirtualContentRoot absoluteVirtualContentRoot)
 
     sb.ToString()

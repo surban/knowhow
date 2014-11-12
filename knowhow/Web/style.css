@@ -13,7 +13,7 @@ body {
 
 #content {
     display: block;
-    width: 50em;
+    max-width: 50em;
     text-align: justify;
     margin: 0 auto;
 }
