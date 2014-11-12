@@ -2,15 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" %(manifest)>
 <head>
     <meta charset="utf-8" />
-    <link rel="shortcut icon" sizes="16x16" href="%(root)/icon16.png" />
-    <link rel="shortcut icon" sizes="32x32" href="%(root)/icon32.png" />
-    <link rel="stylesheet" type="text/css" href="%(root)/Web/style.css" />
+    <link rel="shortcut icon" sizes="16x16" href="%(root)Web/icon16.png" />
+    <link rel="shortcut icon" sizes="32x32" href="%(root)Web/icon32.png" />
+    <link rel="stylesheet" type="text/css" href="%(root)Web/style.css" />
 
     <script id="metadata" type="application/json">%(metadata)</script>
-    <script type="text/javascript" src="%(root)/Scripts/jquery-1.10.2.js"></script>
-    <script type="text/javascript" src="%(root)/Scripts/jquery.signalR-2.0.2.js"></script>
-    <script type="text/javascript" src="%(root)/signalr/hubs"></script>
-    <script type="text/javascript" src="%(root)/Web/script.js"></script>
+    <script type="text/javascript" src="%(root)Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="%(root)Scripts/jquery.signalR-2.0.2.js"></script>
+    <script type="text/javascript" src="%(root)signalr/hubs"></script>
+    <script type="text/javascript" src="%(root)Web/script.js"></script>
     <script type="text/x-mathjax-config">
         MathJax.Hub.Config({TeX:        { equationNumbers: { autoNumber: "AMS" } },
                             "HTML-CSS": { showMathMenu: false, 
@@ -21,9 +21,13 @@
             MathJax.Hub.Config({"HTML-CSS": { availableFonts: [],
                                               preferredFont: null,
                                               webFont: "Latin-Modern" } });
+        } else {
+            MathJax.Hub.Config({"HTML-CSS": { availableFonts: [],
+                                              preferredFont: null,
+                                              webFont: "TeX" } });
         }
     </script>
-    <script type="text/javascript" src="%(root)/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="%(root)MathJax/MathJax.js?config=TeX-AMS_HTML"></script>
 
     <title>%(title)</title>
 </head>

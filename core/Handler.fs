@@ -8,6 +8,8 @@ open Newtonsoft.Json
 open PathTools
 open Offline
 
+let DisableOffline = true
+
 let ActivateCache (response: System.Web.HttpResponse) =
     response.Cache.SetLastModifiedFromFileDependencies()
     response.Cache.SetCacheability(HttpCacheability.Public)
@@ -44,10 +46,11 @@ let HandleMDRequest (requestPath: string) (response: System.Web.HttpResponse) =
     ActivateCache response
     
     ["title", title;
-     "root", VirtualPathUtility.ToAbsolute("~");
-     "manifest", match ManifestVirtualPath requestPath with
-                 | Some p -> sprintf "manifest=\"%s\"" p
-                 | None -> ""
+     "root", VirtualPathUtility.ToAbsolute("~/");
+     "manifest", if DisableOffline then ""
+                 else match ManifestVirtualPath requestPath with
+                      | Some p -> sprintf "manifest=\"%s\"" p
+                      | None -> ""
      "preamble", preamble;
      "metadata", {RequestPath=requestPath;
                   PreloadPath=VirtualPathUtility.ToAbsolute("~/preload/" + requestPath.[2..]); 

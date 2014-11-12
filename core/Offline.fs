@@ -5,22 +5,7 @@ open System.Text
 
 open PathTools
 
-let MathJaxRoots = ["/MathJax/MathJax.js"; 
-                    "/MathJax/config"; 
-                    "/MathJax/extensions"; 
-                    "/MathJax/fonts/HTML-CSS/Latin-Modern";
-                    "/MathJax/fonts/HTML-CSS/TeX/eot";
-                    "/MathJax/fonts/HTML-CSS/TeX/otf";
-                    "/MathJax/fonts/HTML-CSS/TeX/woff";
-                    "/MathJax/jax/element"; 
-                    "/MathJax/jax/input";
-                    "/MathJax/jax/output/HTML-CSS/config.js"; 
-                    "/MathJax/jax/output/HTML-CSS/imageFonts.js";
-                    "/MathJax/jax/output/HTML-CSS/jax.js"; 
-                    "/MathJax/jax/output/HTML-CSS/autoload";
-                    "/MathJax/jax/output/HTML-CSS/fonts/Latin-Modern";
-                    "/MathJax/jax/output/HTML-CSS/fonts/TeX"]
-let MathJaxItems = ["/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"]
+let MathJaxItems = ["/MathJax/MathJax.js?config=TeX-AMS_HTML"]
 let MathJaxRevision = "2.4-beta-2"
 
 let OfflineManifest requestPath =
@@ -30,7 +15,7 @@ let OfflineManifest requestPath =
     let contentFiles = AllFilesInPath contentDir
     let supportVirtualFiles = ["/Scripts"; "/Web"] |> Seq.collect AllFilesInVirtualPath 
     let supportFiles = supportVirtualFiles |> Seq.map VirtualToPhysical
-    let mathJaxVirtualFiles = MathJaxRoots |> Seq.collect AllFilesInVirtualPath  
+    let mathJaxVirtualFiles = AllFilesInVirtualPath "/MathJax"
     let mathJaxFiles = mathJaxVirtualFiles |> Seq.map VirtualToPhysical
 
     let sb = StringBuilder()
