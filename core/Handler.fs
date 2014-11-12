@@ -22,11 +22,11 @@ let FillTemplate (fields: Map<string, string>) =
     Map.fold (fun (text: string) variable value -> text.Replace("%(" + variable + ")", value)) 
         tmpl fields    
 
-type Metadata = {RequestPath: string;  SourceMTime: int64;}
+type Metadata = {RequestPath: string;  PreloadPath: string;  SourceMTime: int64;}
 
-let HandleMDRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
-    let src = VirtualContentPathToPhysical request.Path
-    let preamble_src = PreamblePath request.Path
+let HandleMDRequest (requestPath: string) (response: System.Web.HttpResponse) =    
+    let src = VirtualContentPathToPhysical requestPath
+    let preamble_src = PreamblePath requestPath
     let preamble =
         if File.Exists(preamble_src) then ReadFile preamble_src else ""
     let md = ReadFile src |> MDPreprocessor.ParseMDText |> MDPreprocessor.OutputMDText 
@@ -34,7 +34,7 @@ let HandleMDRequest (request: System.Web.HttpRequest) (response: System.Web.Http
     let title = 
         match MDProcessor.ExtractTitle md with
         | Some t -> t
-        | None -> request.Path
+        | None -> requestPath
     let mdTagged, references = MDProcessor.ExtractAndTagReferences md
     let body = Markdown.WriteHtml mdTagged |> MDProcessor.PatchCitations references 
     
@@ -44,43 +44,46 @@ let HandleMDRequest (request: System.Web.HttpRequest) (response: System.Web.Http
     ActivateCache response
     
     ["title", title;
-     "manifest", match ManifestVirtualPath request.Path with
+     "root", VirtualPathUtility.ToAbsolute("~");
+     "manifest", match ManifestVirtualPath requestPath with
                  | Some p -> sprintf "manifest=\"%s\"" p
                  | None -> ""
      "preamble", preamble;
-     "metadata", {RequestPath=request.Path; 
+     "metadata", {RequestPath=requestPath;
+                  PreloadPath=VirtualPathUtility.ToAbsolute("~/preload/" + requestPath.[2..]); 
                   SourceMTime=File.GetLastWriteTimeUtc(src).Ticks;} 
                     |> JsonConvert.SerializeObject;
      "body", body ] 
         |> Map.ofList |> FillTemplate |> response.Write
     
-let HandleFileRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
-    let src = VirtualContentPathToPhysical request.Path
+let HandleFileRequest (requestPath: string) (response: System.Web.HttpResponse) =    
+    let src = VirtualContentPathToPhysical requestPath
     response.ContentType <- System.Web.MimeMapping.GetMimeMapping(src)
     response.AddFileDependency(src)
     ActivateCache response
     response.TransmitFile src
 
-let HandleOfflineManifestRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
+let HandleOfflineManifestRequest (requestPath: string) (response: System.Web.HttpResponse) =    
     response.ContentType <- "text/cache-manifest"
-    response.Write(OfflineManifest request.Path)
+    response.Write(OfflineManifest requestPath)
 
-let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =    
-    let prefix, rest = SplitVirtualContentPath request.Path
-    let src = VirtualContentPathToPhysical request.Path
+let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =  
+    let requestPath = VirtualPathUtility.ToAppRelative request.Path  
+    let prefix, rest = SplitVirtualContentPath requestPath
+    let src = VirtualContentPathToPhysical requestPath
 
     if rest = [|"offline.manifest"|] then 
-        HandleOfflineManifestRequest request response
+        HandleOfflineManifestRequest requestPath response
     elif Directory.Exists(src) then
         response.Redirect(sprintf "%s/Contents" (request.Path))
     elif File.Exists(src) then
         match Path.GetExtension(src) with
-        | ".md" -> HandleMDRequest request response
-        | _ -> HandleFileRequest request response
+        | ".md" -> HandleMDRequest requestPath response
+        | _ -> HandleFileRequest requestPath response
     else
         response.StatusCode <- 404
         //response.Write(sprintf "Resource not found: %s" src)
-        response.Write(sprintf "Resource not found: %s" request.Path)
+        response.Write(sprintf "Resource not found: %s" requestPath)
 
 
 
