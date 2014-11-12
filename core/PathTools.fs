@@ -33,7 +33,8 @@ let ManifestVirtualPath (requestPath: string) =
     let components = requestPath.Split [|'/'|]
     match components.[1] with
         | "preload" -> None
-        | _ -> Some (VirtualContentRoot requestPath + "/offline.manifest")
+        | _ -> Some (VirtualPathUtility.ToAbsolute("~" + VirtualContentRoot requestPath + 
+                                                   "/offline.manifest"))
 
 let VirtualContentPathToPhysical requestPath =
     let prefix, rest = SplitVirtualContentPath requestPath
@@ -65,8 +66,8 @@ let AllFilesInVirtualPath virtualPath =
     let physicalPath = VirtualToPhysical virtualPath
     seq {
         if File.Exists(physicalPath) then 
-            yield virtualPath
+            yield VirtualPathUtility.ToAbsolute(virtualPath)
         elif Directory.Exists(physicalPath) then
             for physicalFile in AllFilesInPath physicalPath do
-                yield virtualPath + "/" + ToForwardSlashes physicalFile
+                yield VirtualPathUtility.ToAbsolute(virtualPath + "/" + ToForwardSlashes physicalFile)
     }

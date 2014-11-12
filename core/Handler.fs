@@ -8,7 +8,7 @@ open Newtonsoft.Json
 open PathTools
 open Offline
 
-let DisableOffline = true
+let DisableOffline = false
 
 let ActivateCache (response: System.Web.HttpResponse) =
     response.Cache.SetLastModifiedFromFileDependencies()

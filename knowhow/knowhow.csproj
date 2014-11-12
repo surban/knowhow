@@ -437,7 +437,7 @@
     <Content Include="MathJax\jax\output\HTML-CSS\fonts\TeX\WinIE6\Regular\Main.js" />
     <Content Include="MathJax\jax\output\HTML-CSS\imageFonts.js" />
     <Content Include="MathJax\jax\output\HTML-CSS\jax.js" />
-    <Content Include="MathJax\LICENSE" />
+    <Content Include="MathJax\LICENSE.txt" />
     <Content Include="MathJax\MathJax.js" />
     <Content Include="Web\icon16.png" />
     <Content Include="packages.config" />
