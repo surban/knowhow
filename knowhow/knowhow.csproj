@@ -84,7 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Web\icon16.png" />
-    <Content Include="LICENSE.txt" />
     <Content Include="packages.config" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
     <Content Include="Web\OpenSans-Regular.ttf" />
