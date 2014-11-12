@@ -74,6 +74,8 @@ $(function () {
                     window.location.reload();
                 } 
             }, false);
+
+            window.applicationCache.update();
         }
     }
     else {
