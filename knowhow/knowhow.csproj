@@ -108,10 +108,10 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Code\SignalHub.cs" />
-    <Compile Include="App_Code\MDHandler.cs" />
+    <Compile Include="SignalHub.cs" />
+    <Compile Include="MDHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="App_Code\Startup.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\core.fsproj">
@@ -119,6 +119,7 @@
       <Name>core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

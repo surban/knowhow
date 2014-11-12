@@ -3,6 +3,8 @@
 open System.IO
 open System.Collections.Generic
 
+open PathTools
+
 type ConnectionId = string
 type FilePath = string
 type DirectoryPath = string
@@ -60,9 +62,8 @@ module Watch =
             WatchedDirectories.Add(dir) |> ignore
             w.EnableRaisingEvents <- true
 
-
 let RegisterClient connectionId requestPath =
-    let src = Handler.GetSourcePath requestPath
+    let src = VirtualContentPathToPhysical requestPath
     let src_dir = Path.GetDirectoryName src
      
     ClientAssociations.AddWatch connectionId src
