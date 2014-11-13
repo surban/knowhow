@@ -4,7 +4,7 @@ open System.IO
 open System.Text
 open System.Web
 
-open PathTools
+open Tools
 
 let MathJaxItems = ["/MathJax/MathJax.js?config=TeX-AMS_HTML"]
 let MathJaxRevision = "2.4-beta-2"

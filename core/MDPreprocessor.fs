@@ -2,6 +2,8 @@
 
 open System.Text.RegularExpressions
 
+open Tools
+
 type MathElement =
     | MathText of string
     | MathEnvironment of string * (MathElement list)
@@ -57,12 +59,6 @@ let (|MathParagraphText|_|) (txt: string) =
             | _ -> following, ""
         Some (MathParagraph mp, rest)
     | _ -> None
-
-let (|ParseRegex|_|) regex str =
-   let m = Regex(regex, RegexOptions.Singleline).Match(str)
-   if m.Success
-   then Some (List.tail [ for x in m.Groups -> x.Value ])
-   else None
 
 let (|MathBeginBlockText|_|) (txt: string) =
     match txt with

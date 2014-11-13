@@ -2,6 +2,8 @@
 
 open FSharp.Markdown
 
+open Tools
+
 let ReferenceSectionTitles = ["References"; "Bibliography"; "Literature"]
 
 let CompareStrings a b =
@@ -38,7 +40,7 @@ let PatchCitations references txt =
     Map.fold (fun (txt: string) (target: string) no -> 
                 let shortName = 
                     match target with
-                    | MDPreprocessor.ParseRegex @"/?([\w_-]+)\.\w+" [filename] -> filename.ToLower()
+                    | ParseRegex @"/?([\w_-]+)\.\w+" [filename] -> filename.ToLower()
                     | _ -> target
                 txt.Replace(sprintf @"\cite{%s}" shortName, 
                             sprintf "<a href=\"%s\">[%d]</a>" target no))

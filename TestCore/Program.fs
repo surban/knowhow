@@ -3,7 +3,7 @@ open MDPreprocessor
 
 [<EntryPoint>]
 let main argv = 
-    for file in PathTools.AllFilesInPath @"\\brml.tum.de\dfs\nthome\surban\KnowHow\" do
+    for file in Tools.AllFilesInPath @"\\brml.tum.de\dfs\nthome\surban\KnowHow\" do
         printfn "%s" file
 
     0

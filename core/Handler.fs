@@ -2,10 +2,11 @@
 
 open System.IO
 open System.Web
+open System.Text.RegularExpressions
 open FSharp.Markdown
 open Newtonsoft.Json
 
-open PathTools
+open Tools
 open Offline
 
 let DisableOffline = false
@@ -41,7 +42,7 @@ let HandleMDRequest (requestPath: string) (response: System.Web.HttpResponse) =
     let body = Markdown.WriteHtml mdTagged |> MDProcessor.PatchCitations references 
     
     response.AddFileDependency(src)
-    response.AddFileDependency(preamble_src)
+    if File.Exists(preamble_src) then response.AddFileDependency(preamble_src)
     response.AddFileDependency(TemplatePath())
     ActivateCache response
     
@@ -70,23 +71,80 @@ let HandleOfflineManifestRequest (requestPath: string) (response: System.Web.Htt
     response.ContentType <- "text/cache-manifest"
     response.Write(OfflineManifest requestPath)
 
+type AccessLevel =
+    | PublicAccess
+    | InternalAccess
+    | PrivateAccess
+
+let GetAccessLevel owner =
+    match owner with
+    | Shared -> PublicAccess
+    | User u ->
+        let cfgFile = Path.Combine(UserPath u, "Config", "Access.txt")
+        try
+            let text = (ReadFile cfgFile).ToLower()
+            if text.StartsWith("public") then
+                PublicAccess
+            elif text.StartsWith("internal") then
+                InternalAccess
+            else
+                PrivateAccess
+        with
+            | _ -> InternalAccess
+
+let (|InternalRequest|ExternalRequest|) (request: System.Web.HttpRequest) =
+    match request.UserHostName with
+    | ParseRegex InternalHostRegex _ -> InternalRequest
+    | _ -> ExternalRequest
+
+let SAMName (user: System.Security.Principal.WindowsIdentity) =
+    match user.Name.Split([|'\\'|]) with
+    | [|domain; account|] -> account
+    | _ as account -> account.[0]
+
+let AccessAllowed (request: System.Web.HttpRequest) owner =
+    match (GetAccessLevel owner, request) with
+    | PublicAccess, _ -> true
+    | InternalAccess, InternalRequest -> true
+    | InternalAccess, ExternalRequest
+    | PrivateAccess, _ -> 
+        match owner with
+        | User u -> (SAMName request.LogonUserIdentity).ToLower() = u.ToLower()
+        | _ -> failwith "not possible"
+
+let HandleDebugInfo (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =  
+    response.ContentType <- "text/plain"
+    response.Write(sprintf "UserHostName:              %s\n" request.UserHostName)
+    response.Write(sprintf "LogonUserIdentity.Name:    %s\n" request.LogonUserIdentity.Name)
+    
 let HandleRequest (request: System.Web.HttpRequest) (response: System.Web.HttpResponse) =  
     let requestPath = VirtualPathUtility.ToAppRelative request.Path  
+    let owner, _ = ParseVirtualContentPath requestPath
     let prefix, rest = SplitVirtualContentPath requestPath
     let src = VirtualContentPathToPhysical requestPath
-
-    if rest = [|"offline.manifest"|] then 
-        HandleOfflineManifestRequest requestPath response
-    elif Directory.Exists(src) then
-        response.Redirect(sprintf "%s/Contents" (request.Path))
-    elif File.Exists(src) then
-        match Path.GetExtension(src) with
-        | ".md" -> HandleMDRequest requestPath response
-        | _ -> HandleFileRequest requestPath response
+    
+    if AccessAllowed request owner then
+        if rest = [|"offline.manifest"|] then 
+            HandleOfflineManifestRequest requestPath response
+        elif rest = [|"DebugInfo"|] then
+            HandleDebugInfo request response
+        elif Directory.Exists(src) then
+            response.Redirect(sprintf "%s/Contents" (request.Path))
+        elif File.Exists(src) then
+            match Path.GetExtension(src) with
+            | ".md" -> HandleMDRequest requestPath response
+            | _ -> HandleFileRequest requestPath response
+        else
+            response.StatusCode <- 404
+            //response.Write(sprintf "Resource not found: %s" src)
+            response.Write(sprintf "Resource not found: %s" requestPath)
     else
-        response.StatusCode <- 404
-        //response.Write(sprintf "Resource not found: %s" src)
-        response.Write(sprintf "Resource not found: %s" requestPath)
+        if request.LogonUserIdentity.IsAuthenticated then
+            response.StatusCode <- 403   // user is known but has no permission to access
+        else
+            response.StatusCode <- 401   // user is not yet authenticated
+        response.Write(sprintf "No permission for user %s from host %s to access %s" 
+                               request.LogonUserIdentity.Name request.UserHostName requestPath)
 
 
 

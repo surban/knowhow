@@ -75,7 +75,9 @@ $(function () {
                 } 
             }, false);
 
-            window.applicationCache.update();
+            try {
+                window.applicationCache.update();
+            } catch (err) { }
         }
     }
     else {

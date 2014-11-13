@@ -1,7 +1,8 @@
-﻿module PathTools
+﻿module Tools
 
 open System.Web
 open System.IO
+open System.Text.RegularExpressions
 
 let Settings = Configuration.WebConfigurationManager.AppSettings
 let SharedPath = Settings.["SharedPath"]
@@ -9,19 +10,37 @@ let SharedPath = Settings.["SharedPath"]
 let UserPath user = 
     Settings.["UserPath"].Replace("%USER%", user)
 
+let InternalHostRegex = Settings.["InternalHostRegex"]
+
+let (|ParseRegex|_|) regex str =
+   let m = Regex(regex, RegexOptions.Singleline).Match(str)
+   if m.Success
+   then Some (List.tail [ for x in m.Groups -> x.Value ])
+   else None
+
 let ToForwardSlashes (path: string) =
     path.Replace(@"\", "/") 
- 
-let SplitVirtualContentPath (requestPath: string) =
+
+type PathUser =
+    | Shared
+    | User of string
+
+let ParseVirtualContentPath (requestPath: string) =
     let components = requestPath.Split [|'/'|]
     let rec split (components: string array) = 
         match components.[1] with
-            | "preload" -> split components.[1..]
-            | "shared" -> SharedPath, components.[2..]
-            | "user" -> UserPath components.[2], components.[3..]
-            | _ -> failwith "unknown prefix" 
+        | "preload" -> split components.[1..]
+        | "shared" -> Shared, components.[2..]
+        | "user" -> User components.[2], components.[3..]
+        | _ -> failwith "unknown prefix"
     split components
-
+ 
+let SplitVirtualContentPath (requestPath: string) =
+    let user, rest = ParseVirtualContentPath requestPath
+    match user with
+    | Shared -> SharedPath, rest
+    | User u -> UserPath u, rest
+    
 let VirtualContentRoot (requestPath: string) =
     let components = requestPath.Split [|'/'|]
     match components.[1] with
