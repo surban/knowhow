@@ -55,7 +55,8 @@ $(function () {
             rpc.client.fileChanged = function (path, mtime) {
                 if (mtime != metadata.SourceMTime) {
                     console.log("source updated (original=" + metadata.SourceMTime + ", new=" + mtime + ")");
-                    document.getElementById('preloader').src = metadata.PreloadPath + "?tag=" + Math.random();
+                    var ifr = document.getElementById('preloader');
+                    ifr.contentWindow.location.replace(metadata.PreloadPath + "?tag=" + Math.random());
                     metadata.SourceMTime = mtime;
                 }
             }
