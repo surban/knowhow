@@ -94,16 +94,23 @@ let AllFilesInVirtualPath virtualPath =
 
 module Log =
     let source = "Knowhow"
+    let mutable enabled = false
 
     let Init() =
-        if not (EventLog.SourceExists(source)) then
-            EventLog.CreateEventSource(source, "Application")
+        try
+            if EventLog.SourceExists(source) then
+                enabled <- true
+        with
+            | :? System.Security.SecurityException -> ()
 
     let Warning(msg) =
-        EventLog.WriteEntry(source, msg, EventLogEntryType.Warning)
+        if enabled then
+            EventLog.WriteEntry(source, msg, EventLogEntryType.Warning)
 
     let Error(msg) = 
-        EventLog.WriteEntry(source, msg, EventLogEntryType.Error)
+        if enabled then
+            EventLog.WriteEntry(source, msg, EventLogEntryType.Error)
 
     let Info(msg) = 
-        EventLog.WriteEntry(source, msg, EventLogEntryType.Information)
+        if enabled then
+            EventLog.WriteEntry(source, msg, EventLogEntryType.Information)

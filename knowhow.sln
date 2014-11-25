@@ -16,6 +16,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestCore", "TestCore\TestCo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{510A6614-BC74-494A-9A50-EC2FA9FCB998}"
 	ProjectSection(SolutionItems) = preProject
+		CreateEventSource.ps1 = CreateEventSource.ps1
 		LICENSE.txt = LICENSE.txt
 	EndProjectSection
 EndProject
