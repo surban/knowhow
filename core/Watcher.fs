@@ -51,8 +51,10 @@ module Watch =
             Tools.Log.Info(sprintf "Watcher: Notifying client %s for of changed file %s" id src)
             Notify.Invoke(id, src, File.GetLastWriteTimeUtc(src).Ticks)
 
-    let ErrorNotification (event: ErrorEventArgs) =
+    let ErrorNotification (w: FileSystemWatcher) (event: ErrorEventArgs) =
         Tools.Log.Warning(sprintf "Watcher: FileSystemWatcher reported error: %s" (event.GetException().Message))
+        w.EnableRaisingEvents <- false
+        w.EnableRaisingEvents <- true
 
     let AddDirectory (dir: DirectoryPath) =
         if not (WatchedDirectories.Contains dir) then
@@ -60,7 +62,7 @@ module Watch =
             let w = new FileSystemWatcher(dir)
             w.Changed.Add(ChangeNotification)
             w.Created.Add(ChangeNotification)
-            w.Error.Add(ErrorNotification)
+            w.Error.Add(fun evnt -> ErrorNotification w evnt)
             Watchers.Add(w)
             WatchedDirectories.Add(dir) |> ignore
             w.EnableRaisingEvents <- true
