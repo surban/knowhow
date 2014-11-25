@@ -17,7 +17,7 @@ module ClientAssociations =
     let FilesByClient = Dictionary<ConnectionId, HashSet<FilePath>>()
 
     let AddWatch (id: ConnectionId) (path: FilePath) =
-        System.Diagnostics.Debug.WriteLine("Registering client " + id + " for file " + path)
+        Tools.Log.Info(sprintf "Watcher: Registering client %s for file %s" id path)
 
         if not (ClientsByFile.ContainsKey(path)) then
             ClientsByFile.[path] <- HashSet<ConnectionId>()
@@ -31,7 +31,7 @@ module ClientAssociations =
         if FilesByClient.ContainsKey(id) then
             for file in FilesByClient.[id] do
                 if ClientsByFile.[file].Contains(id) then
-                    System.Diagnostics.Debug.WriteLine("Deregistering client " + id + " for file " + file)
+                    Tools.Log.Info(sprintf "Watcher: Deregistering client %s for file %s" id file)
                     ClientsByFile.[file].Remove(id) |> ignore
             FilesByClient.Remove(id) |> ignore
 
@@ -45,19 +45,22 @@ module Watch =
     let Watchers = List<FileSystemWatcher>()
     let WatchedDirectories = HashSet<DirectoryPath>()
 
-    let Notification (event: FileSystemEventArgs) =
+    let ChangeNotification (event: FileSystemEventArgs) =
         let src = event.FullPath
-        System.Diagnostics.Debug.WriteLine("File change notification: " + src)
         for id in (ClientAssociations.GetClientsByFile src) do
-            System.Diagnostics.Debug.WriteLine("Notifying client " + id)
+            Tools.Log.Info(sprintf "Watcher: Notifying client %s for of changed file %s" id src)
             Notify.Invoke(id, src, File.GetLastWriteTimeUtc(src).Ticks)
+
+    let ErrorNotification (event: ErrorEventArgs) =
+        Tools.Log.Warning(sprintf "Watcher: FileSystemWatcher reported error: %s" (event.GetException().Message))
 
     let AddDirectory (dir: DirectoryPath) =
         if not (WatchedDirectories.Contains dir) then
-            System.Diagnostics.Debug.WriteLine("Watching directory " + dir)
+            Tools.Log.Info(sprintf "Watcher: Watching directory %s" dir)
             let w = new FileSystemWatcher(dir)
-            w.Changed.Add(Notification)
-            w.Created.Add(Notification)
+            w.Changed.Add(ChangeNotification)
+            w.Created.Add(ChangeNotification)
+            w.Error.Add(ErrorNotification)
             Watchers.Add(w)
             WatchedDirectories.Add(dir) |> ignore
             w.EnableRaisingEvents <- true

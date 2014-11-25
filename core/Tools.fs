@@ -1,5 +1,6 @@
 ﻿module Tools
 
+open System.Diagnostics
 open System.Web
 open System.IO
 open System.Text.RegularExpressions
@@ -90,3 +91,19 @@ let AllFilesInVirtualPath virtualPath =
             for physicalFile in AllFilesInPath physicalPath do
                 yield VirtualPathUtility.ToAbsolute(virtualPath + "/" + ToForwardSlashes physicalFile)
     }
+
+module Log =
+    let source = "Knowhow"
+
+    let Init() =
+        if not (EventLog.SourceExists(source)) then
+            EventLog.CreateEventSource(source, "Application")
+
+    let Warning(msg) =
+        EventLog.WriteEntry(source, msg, EventLogEntryType.Warning)
+
+    let Error(msg) = 
+        EventLog.WriteEntry(source, msg, EventLogEntryType.Error)
+
+    let Info(msg) = 
+        EventLog.WriteEntry(source, msg, EventLogEntryType.Information)

@@ -11,6 +11,7 @@ namespace knowhow
     {
         public void Configuration(IAppBuilder app)
         {
+            Tools.Log.Init();
             app.MapSignalR();
         }
     }
