@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Default.aspx" />
+    <Content Include="Global.asax" />
     <Content Include="MathJax\config\default.js" />
     <Content Include="MathJax\config\local\local.js" />
     <Content Include="MathJax\config\Safe.js" />
@@ -465,6 +466,9 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
     <Compile Include="SignalHub.cs" />
     <Compile Include="MDHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
