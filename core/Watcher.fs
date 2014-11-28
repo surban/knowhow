@@ -22,18 +22,26 @@ module internal Watch =
 
     let FileChanged (path: FilePath) =
         Tools.Log.Info(sprintf "Watcher: File %s changed" path)
-        WatchedFiles.[path] <- {WatchedFiles.[path] with LastChanged=File.GetLastWriteTimeUtc(path)}
-        WatchedFiles.[path].Notify(path)
+        if WatchedFiles.ContainsKey(path) then
+            WatchedFiles.[path] <- {WatchedFiles.[path] with LastChanged=File.GetLastWriteTimeUtc(path)}
+            WatchedFiles.[path].Notify(path)
 
     let ChangeNotification (event: FileSystemEventArgs) =
-        FileChanged event.FullPath
+        lock WatchLock (fun () -> 
+            FileChanged event.FullPath
+        )
 
-    let ErrorNotification (w: FileSystemWatcher) (event: ErrorEventArgs) =
-        Tools.Log.Warning(sprintf "Watcher: FileSystemWatcher reported error: %s" (event.GetException().Message))
-        w.EnableRaisingEvents <- false
-        w.EnableRaisingEvents <- true
+    let rec ErrorNotification (w: FileSystemWatcher) (event: ErrorEventArgs) =
+        lock WatchLock (fun () -> 
+            Tools.Log.Warning(sprintf "Watcher: FileSystemWatcher reported error: %s" (event.GetException().Message))
+            lock WatchLock (fun () -> 
+                match DirectoryWatchers |> Seq.tryFind (fun entry -> entry.Value = w) with
+                    | Some entry -> ReviveWatcher entry.Key
+                    | None -> ()                
+            )
+        )
 
-    let CreateWatcher (dir: DirectoryPath) =
+    and CreateWatcher (dir: DirectoryPath) =
         Tools.Log.Info(sprintf "Watcher: Creating FileSystemWatcher for directory %s" dir)
         let w = new FileSystemWatcher(dir)
         w.Changed.Add(ChangeNotification)
@@ -42,7 +50,7 @@ module internal Watch =
         w.EnableRaisingEvents <- true       
         DirectoryWatchers.[dir] <- w
 
-    let ReviveWatcher (dir: DirectoryPath) =
+    and ReviveWatcher (dir: DirectoryPath) =
         Tools.Log.Warning(sprintf "Watcher: Reviving FileSystemWatcher for directory %s" dir)
         DirectoryWatchers.[dir].Dispose()
         CreateWatcher dir     
